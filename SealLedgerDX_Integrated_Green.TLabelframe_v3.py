@@ -235,19 +235,7 @@ class SealLedgerDXApp:
         parent.configure(bg=bg_color)
         pad = 10
 
-        frame1 = ttk.LabelFrame(parent, text="①-1 Excelフォーマット複製（同じシート内にページ追加）", style=label_style, padding=pad)
-        frame1.pack(fill="x", padx=pad, pady=pad)
-
-        row1 = tk.Frame(frame1, bg=bg_color)
-        row1.pack(fill="x", pady=2)
-        ttk.Label(row1, text="テンプレート：").pack(side="left")
-        self.fmt_template = tk.StringVar()
-        ttk.Entry(row1, textvariable=self.fmt_template, width=40, font=self.base_font).pack(side="left", padx=5)
-        ttk.Button(row1, text="参照", command=lambda: self.browse_file(self.fmt_template, "Excel files", ".xlsx")).pack(side="left")
-        ttk.Label(row1, text="追加ページ数：").pack(side="left", padx=10)
-        self.fmt_pages = tk.IntVar(value=60)
-        ttk.Spinbox(row1, from_=1, to=200, textvariable=self.fmt_pages, width=8).pack(side="left")
-        ttk.Button(row1, text="▶ 複製実行", command=self.run_format_copy, style="Green.TButton").pack(side="left", padx=10)
+        # ...（①-1 の部分は変更なし）...
 
         frame2 = ttk.LabelFrame(parent, text="①-2 入力規則を自動セット", style=label_style, padding=pad)
         frame2.pack(fill="x", padx=pad, pady=pad)
@@ -286,6 +274,9 @@ class SealLedgerDXApp:
         ttk.Label(row5, text="開始行：").pack(side="left", padx=10)
         self.val_start_row = tk.IntVar(value=3)
         ttk.Entry(row5, textvariable=self.val_start_row, width=5, font=self.base_font).pack(side="left")
+        ttk.Label(row5, text="終了行（0=最終行まで）：").pack(side="left", padx=10)
+        self.val_end_row = tk.IntVar(value=0)
+        ttk.Entry(row5, textvariable=self.val_end_row, width=5, font=self.base_font).pack(side="left")
         ttk.Button(row5, text="▶ 入力規則セット", command=self.run_validation_set, style="Green.TButton").pack(side="left", padx=10)
 
     # ★★★ 修正点：同じシート内にフォーマット罫線を連続追加 ★★★
