@@ -385,7 +385,7 @@ class SealLedgerDXApp:
             messagebox.showerror("エラー", str(e))
 
     # ★★★ 修正点：終了行指定に対応 ★★★
-    def run_validation_set(self):
+        def run_validation_set(self):
         if not OPENPYXL_AVAILABLE:
             messagebox.showerror("エラー", "openpyxlがインストールされていません。")
             return
@@ -418,11 +418,17 @@ class SealLedgerDXApp:
                 messagebox.showerror("エラー", f"対象シート '{target_sheet_name}' が見つかりません。")
                 return
             ws_target = wb_target[target_sheet_name]
-            target_col = self.val_target_col.get().strip().upper()
-            start_row = self.val_start_row.get()
-            end_row_input = self.val_end_row.get()  # ★★★ 終了行を取得 ★★★
+            
+            # ★★★ 修正点①：列をカンマ区切りで複数指定可能に ★★★
+            target_cols_raw = self.val_target_col.get().strip().upper()
+            target_cols = [col.strip() for col in target_cols_raw.split(',') if col.strip()]
+            if not target_cols:
+                messagebox.showerror("エラー", "設定列を正しく入力してください（例：A,B）。")
+                return
 
-            # ★★★ 終了行の決定（入力が0または空欄の場合は最終行） ★★★
+            start_row = self.val_start_row.get()
+            end_row_input = self.val_end_row.get()
+
             if end_row_input <= 0:
                 end_row = ws_target.max_row
             else:
@@ -436,11 +442,15 @@ class SealLedgerDXApp:
             dv.error = 'リストから選択してください。'
             dv.errorTitle = '入力エラー'
             ws_target.add_data_validation(dv)
-            dv.add(f"{target_col}{start_row}:{target_col}{end_row}")
+
+            # ★★★ 修正点②：各列に個別に適用 ★★★
+            for col in target_cols:
+                dv.add(f"{col}{start_row}:{col}{end_row}")
 
             wb_target.save(target_file)
-            self.status_var.set(f"✅ 入力規則セット完了: {len(values)}件（行{start_row}～{end_row}）")
-            messagebox.showinfo("成功", f"{len(values)}件の選択肢を\n行{start_row}～{end_row}に設定しました。")
+            # ★★★ 修正点③：メッセージに列数・列名・行範囲を表示 ★★★
+            self.status_var.set(f"✅ 入力規則セット完了: {len(values)}件（{len(target_cols)}列、行{start_row}～{end_row}）")
+            messagebox.showinfo("成功", f"{len(values)}件の選択肢を\n{len(target_cols)}列（{', '.join(target_cols)}）の\n行{start_row}～{end_row}に設定しました。")
         except Exception as e:
             messagebox.showerror("エラー", str(e))
 
