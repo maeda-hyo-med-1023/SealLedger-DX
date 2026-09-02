@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SealLedgerDX 統合自動化システム - 取扱説明書</title>
+    <style>
+        /* ★★★ フォント指定（BIZ UDPゴシック優先） ★★★ */
+        body {
+            font-family: "BIZ UDPGothic", "BIZ UDGothic", "BIZ UDPゴシック", "Meiryo", sans-serif;
+            line-height: 1.8;
+            color: #2d2d2d;
+            background-color: #f8f9fa;
+            padding: 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1, h2, h3, h4 {
+            font-family: "BIZ UDPGothic", "BIZ UDGothic", "BIZ UDPゴシック", "Meiryo", sans-serif;
+            font-weight: bold;
+        }
+        h1 {
+            font-size: 28px;
+            color: #1B5E20;
+            border-bottom: 4px solid #2E7D32;
+            padding-bottom: 10px;
+            text-align: center;
+            background: #E8F5E9;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        h2 {
+            font-size: 22px;
+            color: #1B5E20;
+            border-left: 6px solid #2E7D32;
+            padding-left: 15px;
+            margin-top: 30px;
+            background: #f0f7f0;
+            padding: 10px 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        h3 {
+            font-size: 18px;
+            color: #2E7D32;
+            margin-top: 20px;
+            border-bottom: 2px dashed #a5d6a7;
+            padding-bottom: 5px;
+        }
+        .section {
+            background: #ffffff;
+            padding: 20px 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            border: 1px solid #c8e6c9;
+        }
+        .tab-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 10px 0;
+        }
+        .tab-item {
+            background: #f0f7f0;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border-left: 5px solid #2E7D32;
+            font-weight: bold;
+        }
+        .tab-item span {
+            font-weight: normal;
+            color: #333;
+        }
+        ul, ol {
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 6px;
+        }
+        .code-box {
+            background: #2d2d2d;
+            color: #e0e0e0;
+            padding: 12px 18px;
+            border-radius: 6px;
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            border: 1px solid #555;
+            margin: 10px 0;
+        }
+        .note {
+            background: #fff8e1;
+            border-left: 5px solid #ffa000;
+            padding: 12px 18px;
+            border-radius: 6px;
+            margin: 15px 0;
+            color: #4e342e;
+        }
+        .warning {
+            background: #ffebee;
+            border-left: 5px solid #d32f2f;
+            padding: 12px 18px;
+            border-radius: 6px;
+            margin: 15px 0;
+            color: #b71c1c;
+        }
+        .success {
+            background: #e8f5e9;
+            border-left: 5px solid #2e7d32;
+            padding: 12px 18px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .footer {
+            text-align: center;
+            font-size: 14px;
+            color: #777;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+            margin-top: 30px;
+        }
+        @media (max-width: 768px) {
+            .tab-grid {
+                grid-template-columns: 1fr;
+            }
+            body {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>📋 SealLedgerDX 統合自動化システム<br>取扱説明書（User Manual）</h1>
+
+<div class="section">
+    <h2>1. システム概要</h2>
+    <p><strong>SealLedgerDX</strong> は、<strong>校印使用台帳（Excel）</strong>の作成・入力作業を効率化するための統合自動化ツールです。</p>
+    <p>本システムは、以下の5つの主要機能を1つのアプリケーションに統合し、PDF変換・画像加工・ファイル整理・OCR（テキスト化）までをシームレスにサポートします。</p>
+    <ul>
+        <li>✅ Excelフォーマットの複製（ページ追加）</li>
+        <li>✅ 入力規則の一括セット</li>
+        <li>✅ PDF → 画像変換</li>
+        <li>✅ フォルダ一括作成</li>
+        <li>✅ ファイル振り分け（同名フォルダへ）</li>
+        <li>✅ 画像カット／リサイズ／Excel挿入</li>
+        <li>✅ OCR（画像→テキスト化）</li>
+    </ul>
+    <p class="note">💡 本システムは <strong>Windows環境</strong> を前提としており、Python 3.10 以上で動作します。</p>
+</div>
+
+<div class="section">
+    <h2>2. 動作環境と事前準備</h2>
+    <h3>2.1 必要ライブラリ（インストールコマンド）</h3>
+    <div class="code-box">
+        pip install openpyxl pillow pdf2image pytesseract
+    </div>
+
+    <h3>2.2 外部ツール（OCR機能を使用する場合）</h3>
+    <ul>
+        <li><strong>Tesseract OCR</strong> 本体のインストールが必要です。</li>
+        <li>ダウンロード: <a href="https://github.com/UB-Mannheim/tesseract/wiki" target="_blank">UB-Mannheim Tesseract</a></li>
+        <li>インストール時に <strong>「Japanese (jpn)」</strong> 言語データを必ず追加してください。</li>
+        <li>デフォルトのインストール先: <code>C:\Program Files\Tesseract-OCR\tesseract.exe</code></li>
+    </ul>
+
+    <h3>2.3 PDF変換機能を使用する場合</h3>
+    <ul>
+        <li><strong>poppler</strong> が必要です（pdf2imageの依存）。</li>
+        <li>Windowsの場合: <a href="https://github.com/oschwartz10612/poppler-windows/releases/" target="_blank">poppler Windows版</a> をダウンロードし、PATHを通してください。</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>3. 起動方法</h2>
+    <p>コマンドプロンプト（ターミナル）を開き、スクリプトが配置されているディレクトリに移動して、以下のコマンドを実行します。</p>
+    <div class="code-box">
+        python SealLedgerDX_Integrated_Green.TLabelframe_v3.py
+    </div>
+    <p class="success">✅ 起動後、メインウィンドウが表示されます。</p>
+</div>
+
+<div class="section">
+    <h2>4. メイン画面の構成</h2>
+    <p>画面上部には <strong>「表示サイズ」</strong> 切替パネル（小・中・大）があり、文字の見やすさを調整できます。</p>
+    <p>中央には <strong>5つのタブ</strong> が配置されています。</p>
+
+    <div class="tab-grid">
+        <div class="tab-item">① フォーマット＆入力規則 <span>Excel複製・入力規則設定</span></div>
+        <div class="tab-item">② PDF変換＆フォルダ作成 <span>画像変換・フォルダ一括作成</span></div>
+        <div class="tab-item">③ ファイル振り分け <span>同名フォルダへの自動格納</span></div>
+        <div class="tab-item">④ 校印台帳カット支援 <span>画像カット・リサイズ・Excel挿入</span></div>
+        <div class="tab-item">⑤ OCR（画像→テキスト化） <span>画像からテキスト抽出</span></div>
+    </div>
+</div>
+
+<div class="section">
+    <h2>5. 各タブの詳細操作</h2>
+
+    <h3>📁 タブ①: フォーマット＆入力規則</h3>
+    <ul>
+        <li><strong>①-1 Excelフォーマット複製</strong>: テンプレートExcelを選択し、追加ページ数を指定して「複製実行」をクリックすると、<code>_generated.xlsx</code> ファイルが生成されます。</li>
+        <li><strong>①-2 入力規則を自動セット</strong>: マスターExcel（選択肢リスト）と対象Excelを指定し、マスターシート名・列、対象シート名・列・開始行を設定して「入力規則セット」をクリックすると、プルダウンリストが一括適用されます。</li>
+    </ul>
+
+    <h3>📄 タブ②: PDF変換＆フォルダ作成</h3>
+    <ul>
+        <li><strong>②-1 PDF → 画像変換</strong>: PDFファイルと出力先を指定し、DPI（解像度）とページ範囲（例：1-10、空欄で全ページ）を設定して「変換実行」をクリックすると、<code>page_1.png</code> 形式で画像が出力されます。</li>
+        <li><strong>②-2 フォルダ一括作成</strong>: ベース名（例：<code>page_</code>）と作成数（例：<code>62</code>）を指定し、出力先フォルダを選択して「フォルダ作成」をクリックすると、<code>page_1</code> ～ <code>page_62</code> のフォルダが一括作成されます。</li>
+    </ul>
+
+    <h3>🗂️ タブ③: ファイル振り分け</h3>
+    <ul>
+        <li>ソースフォルダ（画像ファイル）とターゲットフォルダ（格納先）を指定します。</li>
+        <li>ベース名（例：<code>page_</code>）に一致するファイルを抽出し、拡張子を除いたファイル名と同名のフォルダに自動コピーします。</li>
+        <li>「末尾付与名称」を入力すると、コピー先のファイル名に任意の文字列を追加できます（例：<code>_processed</code>）。</li>
+        <li>「フォルダ自動作成」にチェックを入れると、対応するフォルダが存在しない場合に自動で作成します。</li>
+    </ul>
+
+    <h3>✂️ タブ④: 校印台帳カット支援（重要機能）</h3>
+    <ul>
+        <li><strong>共通設定</strong>: Excelファイル（校印使用台帳.xlsx）と画像フォルダを指定し、ページ番号（例：<code>33</code>）を設定します。</li>
+        <li>「_cutフォルダ作成」「resizeフォルダ作成」ボタンで、出力先フォルダを事前に作成できます。</li>
+        <li><strong>3つのサブタブ</strong>:
+            <ul>
+                <li><strong>① 使途・文書番号</strong>: カットのみ（リサイズなし）。<code>page_{n}_cutPurposeDocumentNo.png</code> を出力。</li>
+                <li><strong>② 日付・使用印 (D列)</strong>: カット → リサイズ → Excelの <strong>D1セル</strong> に挿入。<code>page_{n}_cutDate_Stamp.png</code> → <code>page_{n}_resizeDateStamp.png</code></li>
+                <li><strong>③ 使用部署・取扱者 (H列)</strong>: カット → リサイズ → Excelの <strong>H1セル</strong> に挿入。<code>page_{n}_cutDepartment_User.png</code> → <code>page_{n}_resizeDepartmentUser.png</code></li>
+            </ul>
+        </li>
+        <li>「次ページへ (+1)」ボタンで、ページ番号をインクリメントしながら連続処理が可能です。</li>
+        <li class="warning">⚠️ Excelファイルに画像を挿入する際は、<strong>対象のExcelファイルを閉じてから</strong>「D列に挿入」「H列に挿入」ボタンを実行してください。</li>
+    </ul>
+
+    <h3>🔍 タブ⑤: OCR（画像→テキスト化）</h3>
+    <ul>
+        <li>画像フォルダと出力先（テキスト保存先）を指定します。</li>
+        <li>ファイルパターン（例：<code>*.png</code>）と言語（例：<code>jpn</code>）を設定します。</li>
+        <li>「OCR実行」をクリックすると、フォルダ内の全画像がテキスト化され、<strong>縦に連結</strong>された以下の2つのファイルが出力されます。
+            <ul>
+                <li><strong>OCR_result.txt</strong>: プレーンテキスト形式</li>
+                <li><strong>OCR_result.md</strong>: Markdown形式（見出し付き）</li>
+            </ul>
+        </li>
+        <li class="note">💡 手書き文字の認識精度は、画像のDPIや文字の鮮明さに依存します。必要に応じてタブ②で事前に画像の解像度を調整してください。</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>6. 便利機能「表示サイズ切替」</h2>
+    <p>画面上部の <strong>「小」「中」「大」</strong> ラジオボタンをクリックするだけで、アプリケーション全体のフォントサイズを動的に変更できます。</p>
+    <ul>
+        <li>👶 <strong>小</strong>（8pt）：コンパクト表示</li>
+        <li>👤 <strong>中</strong>（10pt）：デフォルト（推奨）</li>
+        <li>👴 <strong>大</strong>（14pt）：拡大表示（見やすい）</li>
+    </ul>
+    <p>高齢者の方や、解像度の高いモニターを使用する場合に特に便利です。</p>
+</div>
+
+<div class="section">
+    <h2>7. 注意事項</h2>
+    <ul>
+        <li><strong>Excelファイルを開いたまま実行しないでください。</strong>特にタブ④の「挿入」機能は、書き込み権限がないとエラーになります。</li>
+        <li><strong>OCR機能（タブ⑤）を使用するには</strong>、Tesseract OCR本体がインストールされ、正しいパス（<code>C:\Program Files\Tesseract-OCR\tesseract.exe</code>）に配置されている必要があります。</li>
+        <li><strong>PDF変換（タブ②）を使用するには</strong>、popplerがインストールされている必要があります。</li>
+        <li>大量の画像を処理する場合は、システムのメモリやCPUリソースに注意してください。</li>
+        <li>重要なデータは必ず<strong>バックアップ</strong>を取ってから本ツールを実行することを推奨します。</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>8. よくある質問（FAQ）</h2>
+    <ul>
+        <li><strong>Q: 「openpyxlがインストールされていません」と表示される。</strong><br>A: ターミナルで <code>pip install openpyxl</code> を実行してください。</li>
+        <li><strong>Q: OCRで日本語が正しく認識されない。</strong><br>A: Tesseractインストール時に「Japanese (jpn)」言語データが追加されているか確認してください。</li>
+        <li><strong>Q: 画像カット後、画像が変わらない。</strong><br>A: カット量（cm）が小さすぎる場合があります。数値を大きくするか、DPI設定を確認してください（デフォルトは96）。</li>
+        <li><strong>Q: 「Excelファイルが開かれています」というエラーが出る。</strong><br>A: 対象のExcelファイルを閉じてから、再度「挿入」ボタンを押してください。</li>
+    </ul>
+</div>
+
+<div class="footer">
+    <p>SealLedgerDX - 統合自動化システム  v3</p>
+    <p>© 2026 神戸庶務 (Kobe General Affairs)   |  フォント: BIZ UDPゴシック</p>
+    <p>本マニュアルは <code>SealLedgerDX_UserManual.html</code> として提供されます。</p>
+</div>
+
+</body>
+</html>
