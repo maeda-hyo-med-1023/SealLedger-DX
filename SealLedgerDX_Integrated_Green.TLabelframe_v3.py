@@ -307,11 +307,9 @@ class SealLedgerDXApp:
                 return
 
         try:
-            # テンプレートを出力先にコピー（元ファイルは変更しない）
             shutil.copy2(template, output)
             wb = openpyxl.load_workbook(output)
 
-            # 「校印使用台帳」シートを取得
             target_sheet = None
             for sheet_name in wb.sheetnames:
                 if '校印使用台帳' in sheet_name:
@@ -320,28 +318,30 @@ class SealLedgerDXApp:
             if target_sheet is None:
                 target_sheet = wb[wb.sheetnames[0]]
 
-            # ★★★ 同じシート内で行ブロックを追加コピー ★★★
+            # テンプレートブロックの行範囲
             template_start_row = 1
             template_end_row = 23
-            block_height = template_end_row - template_start_row + 1  # = 23行
+            block_height = template_end_row - template_start_row + 1
 
-            # 現在の最終行を取得
+            # 列範囲を動的に取得（最大列数まで）
+            max_col = target_sheet.max_column
+
             current_max_row = target_sheet.max_row
             if current_max_row < template_end_row:
                 current_max_row = template_end_row
 
-            # 追加する行の開始位置（現在の最終行 + 1）
             insert_start_row = current_max_row + 1
 
-            # 指定されたページ数分だけ、ブロックを下方向に複製
+            from openpyxl.utils import get_column_letter
+
             for page_idx in range(pages):
                 dest_start_row = insert_start_row + (page_idx * block_height)
 
-                # セル値＋スタイルをコピー（A～F列）
+                # セル値＋スタイルをコピー（全列）
                 for row_offset in range(block_height):
                     src_row = template_start_row + row_offset
                     dest_row = dest_start_row + row_offset
-                    for col in range(1, 7):
+                    for col in range(1, max_col + 1):
                         src_cell = target_sheet.cell(row=src_row, column=col)
                         dest_cell = target_sheet.cell(row=dest_row, column=col)
                         dest_cell.value = src_cell.value
@@ -354,24 +354,25 @@ class SealLedgerDXApp:
                     if target_sheet.row_dimensions[src_row].height:
                         target_sheet.row_dimensions[dest_row].height = target_sheet.row_dimensions[src_row].height
 
-                # セルの結合をコピー
+                # セルの結合をコピー（全列対応）
                 for merged_range in list(target_sheet.merged_cells.ranges):
                     if merged_range.min_row <= template_end_row and merged_range.max_row <= template_end_row:
                         row_offset = merged_range.min_row - template_start_row
                         new_min_row = dest_start_row + row_offset
-                        new_max_row = dest_start_row + (merged_range.max_row - template_start_row)
+                        new_max_row2 = dest_start_row + (merged_range.max_row - template_start_row)
                         new_min_col = merged_range.min_col
                         new_max_col = merged_range.max_col
                         target_sheet.merge_cells(
                             start_row=new_min_row,
                             start_column=new_min_col,
-                            end_row=new_max_row,
+                            end_row=new_max_row2,
                             end_column=new_max_col
                         )
 
-            # 印刷範囲を拡張（新しい最終行まで）
+            # 印刷範囲を全列に拡張
             new_max_row = insert_start_row + (pages * block_height) - 1
-            target_sheet.print_area = f"A1:F{new_max_row}"
+            last_col_letter = get_column_letter(max_col)
+            target_sheet.print_area = f"A1:{last_col_letter}{new_max_row}"
 
             wb.save(output)
             self.status_var.set(f"✅ 複製完了: {pages}ページを同じシート内に追加しました。")
