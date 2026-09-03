@@ -516,7 +516,8 @@ class SealLedgerDXApp:
         dpi = self.pdf_dpi.get()
         try:
             self.status_var.set("PDF変換中...")
-            images = convert_from_path(pdf, dpi=dpi)
+            poppler_bin_path = r"C:\poppler-24.02.0\Library\bin"  # 実際のパスに置き換えてください
+            images = convert_from_path(pdf, dpi=dpi, poppler_path=poppler_bin_path)
             total = len(images)
             for i, img in enumerate(images, 1):
                 img.save(os.path.join(out, f"page_{i}.png"), "PNG")
